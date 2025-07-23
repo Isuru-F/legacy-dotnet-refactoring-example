@@ -1,6 +1,6 @@
 using LegacyECommerceApi.Models;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace LegacyECommerceApi.Repositories
 {
@@ -68,7 +68,7 @@ namespace LegacyECommerceApi.Repositories
             return products;
         }
 
-        public Product Add(Product product)
+        public async Task<Product> AddAsync(Product product)
         {
             const string query = @"
                 INSERT INTO Products (Name, Description, Price, StockQuantity, Category, CreatedDate, IsActive)
@@ -87,8 +87,8 @@ namespace LegacyECommerceApi.Repositories
                     command.Parameters.AddWithValue("@CreatedDate", DateTime.UtcNow);
                     command.Parameters.AddWithValue("@IsActive", product.IsActive);
 
-                    connection.Open();
-                    product.ProductId = (int)command.ExecuteScalar();
+                    await connection.OpenAsync();
+                    product.ProductId = (int)(await command.ExecuteScalarAsync())!;
                     product.CreatedDate = DateTime.UtcNow;
                 }
             }
@@ -97,7 +97,7 @@ namespace LegacyECommerceApi.Repositories
             return product;
         }
 
-        public void Update(Product product)
+        public async Task UpdateAsync(Product product)
         {
             const string query = @"
                 UPDATE Products 
@@ -117,15 +117,15 @@ namespace LegacyECommerceApi.Repositories
                     command.Parameters.AddWithValue("@Category", (object?)product.Category ?? DBNull.Value);
                     command.Parameters.AddWithValue("@IsActive", product.IsActive);
 
-                    connection.Open();
-                    command.ExecuteNonQuery();
+                    await connection.OpenAsync();
+                    await command.ExecuteNonQueryAsync();
                 }
             }
 
             _logger.LogInformation("Product updated: {ProductId}", product.ProductId);
         }
 
-        public void Delete(int id)
+        public async Task DeleteAsync(int id)
         {
             const string query = "DELETE FROM Products WHERE ProductId = @ProductId";
 
@@ -135,15 +135,15 @@ namespace LegacyECommerceApi.Repositories
                 {
                     command.Parameters.AddWithValue("@ProductId", id);
                     
-                    connection.Open();
-                    command.ExecuteNonQuery();
+                    await connection.OpenAsync();
+                    await command.ExecuteNonQueryAsync();
                 }
             }
 
             _logger.LogInformation("Product deleted: {ProductId}", id);
         }
 
-        public IEnumerable<Product> GetByCategory(string category)
+        public async Task<IEnumerable<Product>> GetByCategoryAsync(string category)
         {
             const string query = @"
                 SELECT ProductId, Name, Description, Price, StockQuantity, Category, CreatedDate, IsActive 
@@ -159,10 +159,10 @@ namespace LegacyECommerceApi.Repositories
                 {
                     command.Parameters.AddWithValue("@Category", category);
                     
-                    connection.Open();
-                    using (var reader = command.ExecuteReader())
+                    await connection.OpenAsync();
+                    using (var reader = await command.ExecuteReaderAsync())
                     {
-                        while (reader.Read())
+                        while (await reader.ReadAsync())
                         {
                             products.Add(MapProduct(reader));
                         }

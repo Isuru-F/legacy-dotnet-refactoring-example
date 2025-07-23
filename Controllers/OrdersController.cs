@@ -52,7 +52,7 @@ namespace LegacyECommerceApi.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Order> PostOrder(Order order)
+        public async Task<ActionResult<Order>> PostOrder(Order order)
         {
             if (!ModelState.IsValid)
             {
@@ -62,7 +62,7 @@ namespace LegacyECommerceApi.Controllers
             try
             {
                 order.OrderDate = DateTime.UtcNow;
-                var createdOrder = _orderRepository.Add(order);
+                var createdOrder = await _orderRepository.AddAsync(order);
                 return CreatedAtAction(nameof(GetOrder), new { id = createdOrder.OrderId }, createdOrder);
             }
             catch (Exception ex)
@@ -73,7 +73,7 @@ namespace LegacyECommerceApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult PutOrder(int id, Order order)
+        public async Task<IActionResult> PutOrder(int id, Order order)
         {
             if (id != order.OrderId)
             {
@@ -87,7 +87,7 @@ namespace LegacyECommerceApi.Controllers
 
             try
             {
-                _orderRepository.Update(order);
+                await _orderRepository.UpdateAsync(order);
                 return NoContent();
             }
             catch (Exception ex)
@@ -98,11 +98,11 @@ namespace LegacyECommerceApi.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteOrder(int id)
+        public async Task<IActionResult> DeleteOrder(int id)
         {
             try
             {
-                _orderRepository.Delete(id);
+                await _orderRepository.DeleteAsync(id);
                 return NoContent();
             }
             catch (Exception ex)
@@ -128,11 +128,11 @@ namespace LegacyECommerceApi.Controllers
         }
 
         [HttpGet("status/{status}")]
-        public ActionResult<IEnumerable<Order>> GetOrdersByStatus(string status)
+        public async Task<ActionResult<IEnumerable<Order>>> GetOrdersByStatus(string status)
         {
             try
             {
-                var orders = _orderRepository.GetByStatus(status);
+                var orders = await _orderRepository.GetByStatusAsync(status);
                 return Ok(orders);
             }
             catch (Exception ex)

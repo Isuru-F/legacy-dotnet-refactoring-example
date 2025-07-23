@@ -52,7 +52,7 @@ namespace LegacyECommerceApi.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Product> PostProduct(Product product)
+        public async Task<ActionResult<Product>> PostProduct(Product product)
         {
             if (!ModelState.IsValid)
             {
@@ -61,7 +61,7 @@ namespace LegacyECommerceApi.Controllers
 
             try
             {
-                var createdProduct = _productRepository.Add(product);
+                var createdProduct = await _productRepository.AddAsync(product);
                 return CreatedAtAction(nameof(GetProduct), new { id = createdProduct.ProductId }, createdProduct);
             }
             catch (Exception ex)
@@ -72,7 +72,7 @@ namespace LegacyECommerceApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult PutProduct(int id, Product product)
+        public async Task<IActionResult> PutProduct(int id, Product product)
         {
             if (id != product.ProductId)
             {
@@ -86,7 +86,7 @@ namespace LegacyECommerceApi.Controllers
 
             try
             {
-                _productRepository.Update(product);
+                await _productRepository.UpdateAsync(product);
                 return NoContent();
             }
             catch (Exception ex)
@@ -97,11 +97,11 @@ namespace LegacyECommerceApi.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteProduct(int id)
+        public async Task<IActionResult> DeleteProduct(int id)
         {
             try
             {
-                _productRepository.Delete(id);
+                await _productRepository.DeleteAsync(id);
                 return NoContent();
             }
             catch (Exception ex)
@@ -112,11 +112,11 @@ namespace LegacyECommerceApi.Controllers
         }
 
         [HttpGet("category/{category}")]
-        public ActionResult<IEnumerable<Product>> GetProductsByCategory(string category)
+        public async Task<ActionResult<IEnumerable<Product>>> GetProductsByCategory(string category)
         {
             try
             {
-                var products = _productRepository.GetByCategory(category);
+                var products = await _productRepository.GetByCategoryAsync(category);
                 return Ok(products);
             }
             catch (Exception ex)

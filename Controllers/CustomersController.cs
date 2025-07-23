@@ -52,7 +52,7 @@ namespace LegacyECommerceApi.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Customer> PostCustomer(Customer customer)
+        public async Task<ActionResult<Customer>> PostCustomer(Customer customer)
         {
             if (!ModelState.IsValid)
             {
@@ -61,7 +61,7 @@ namespace LegacyECommerceApi.Controllers
 
             try
             {
-                var createdCustomer = _customerRepository.Add(customer);
+                var createdCustomer = await _customerRepository.AddAsync(customer);
                 return CreatedAtAction(nameof(GetCustomer), new { id = createdCustomer.CustomerId }, createdCustomer);
             }
             catch (Exception ex)
@@ -72,7 +72,7 @@ namespace LegacyECommerceApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult PutCustomer(int id, Customer customer)
+        public async Task<IActionResult> PutCustomer(int id, Customer customer)
         {
             if (id != customer.CustomerId)
             {
@@ -86,7 +86,7 @@ namespace LegacyECommerceApi.Controllers
 
             try
             {
-                _customerRepository.Update(customer);
+                await _customerRepository.UpdateAsync(customer);
                 return NoContent();
             }
             catch (Exception ex)
@@ -97,11 +97,11 @@ namespace LegacyECommerceApi.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteCustomer(int id)
+        public async Task<IActionResult> DeleteCustomer(int id)
         {
             try
             {
-                _customerRepository.Delete(id);
+                await _customerRepository.DeleteAsync(id);
                 return NoContent();
             }
             catch (Exception ex)

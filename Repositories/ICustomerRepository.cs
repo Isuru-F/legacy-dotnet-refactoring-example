@@ -6,9 +6,9 @@ namespace LegacyECommerceApi.Repositories
     {
         Task<Customer?> GetByIdAsync(int id);
         Task<IEnumerable<Customer>> GetAllAsync();
-        Customer Add(Customer customer);
-        void Update(Customer customer);
-        void Delete(int id);
+        Task<Customer> AddAsync(Customer customer);
+        Task UpdateAsync(Customer customer);
+        Task DeleteAsync(int id);
         Task<Customer?> GetByEmailAsync(string email);
     }
 }

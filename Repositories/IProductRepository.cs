@@ -6,10 +6,10 @@ namespace LegacyECommerceApi.Repositories
     {
         Task<Product?> GetByIdAsync(int id);
         Task<IEnumerable<Product>> GetAllAsync();
-        Product Add(Product product);
-        void Update(Product product);
-        void Delete(int id);
-        IEnumerable<Product> GetByCategory(string category);
+        Task<Product> AddAsync(Product product);
+        Task UpdateAsync(Product product);
+        Task DeleteAsync(int id);
+        Task<IEnumerable<Product>> GetByCategoryAsync(string category);
         Task<IEnumerable<Product>> GetActiveProductsAsync();
     }
 }
