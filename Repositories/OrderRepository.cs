@@ -1,6 +1,6 @@
 using LegacyECommerceApi.Models;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace LegacyECommerceApi.Repositories
 {
@@ -99,11 +99,11 @@ namespace LegacyECommerceApi.Repositories
             return orders;
         }
 
-        public Order Add(Order order)
+        public async Task<Order> AddAsync(Order order)
         {
             using (var connection = new SqlConnection(_connectionString))
             {
-                connection.Open();
+                await connection.OpenAsync();
                 using (var transaction = connection.BeginTransaction())
                 {
                     try
@@ -121,7 +121,7 @@ namespace LegacyECommerceApi.Repositories
                             command.Parameters.AddWithValue("@Status", order.Status);
                             command.Parameters.AddWithValue("@ShippingAddress", (object?)order.ShippingAddress ?? DBNull.Value);
 
-                            order.OrderId = (int)command.ExecuteScalar();
+                            order.OrderId = (int)(await command.ExecuteScalarAsync())!;
                         }
 
                         foreach (var item in order.OrderItems)
@@ -138,7 +138,7 @@ namespace LegacyECommerceApi.Repositories
                                 command.Parameters.AddWithValue("@Quantity", item.Quantity);
                                 command.Parameters.AddWithValue("@UnitPrice", item.UnitPrice);
 
-                                item.OrderItemId = (int)command.ExecuteScalar();
+                                item.OrderItemId = (int)(await command.ExecuteScalarAsync())!;
                                 item.OrderId = order.OrderId;
                             }
                         }
@@ -157,7 +157,7 @@ namespace LegacyECommerceApi.Repositories
             return order;
         }
 
-        public void Update(Order order)
+        public async Task UpdateAsync(Order order)
         {
             const string query = @"
                 UPDATE Orders 
@@ -173,19 +173,19 @@ namespace LegacyECommerceApi.Repositories
                     command.Parameters.AddWithValue("@Status", order.Status);
                     command.Parameters.AddWithValue("@ShippingAddress", (object?)order.ShippingAddress ?? DBNull.Value);
 
-                    connection.Open();
-                    command.ExecuteNonQuery();
+                    await connection.OpenAsync();
+                    await command.ExecuteNonQueryAsync();
                 }
             }
 
             _logger.LogInformation("Order updated: {OrderId}", order.OrderId);
         }
 
-        public void Delete(int id)
+        public async Task DeleteAsync(int id)
         {
             using (var connection = new SqlConnection(_connectionString))
             {
-                connection.Open();
+                await connection.OpenAsync();
                 using (var transaction = connection.BeginTransaction())
                 {
                     try
@@ -194,14 +194,14 @@ namespace LegacyECommerceApi.Repositories
                         using (var command = new SqlCommand(deleteItemsQuery, connection, transaction))
                         {
                             command.Parameters.AddWithValue("@OrderId", id);
-                            command.ExecuteNonQuery();
+                            await command.ExecuteNonQueryAsync();
                         }
 
                         const string deleteOrderQuery = "DELETE FROM Orders WHERE OrderId = @OrderId";
                         using (var command = new SqlCommand(deleteOrderQuery, connection, transaction))
                         {
                             command.Parameters.AddWithValue("@OrderId", id);
-                            command.ExecuteNonQuery();
+                            await command.ExecuteNonQueryAsync();
                         }
 
                         transaction.Commit();
@@ -248,7 +248,7 @@ namespace LegacyECommerceApi.Repositories
             return orders;
         }
 
-        public IEnumerable<Order> GetByStatus(string status)
+        public async Task<IEnumerable<Order>> GetByStatusAsync(string status)
         {
             const string query = @"
                 SELECT o.OrderId, o.CustomerId, o.OrderDate, o.TotalAmount, o.Status, o.ShippingAddress,
@@ -266,10 +266,10 @@ namespace LegacyECommerceApi.Repositories
                 {
                     command.Parameters.AddWithValue("@Status", status);
                     
-                    connection.Open();
-                    using (var reader = command.ExecuteReader())
+                    await connection.OpenAsync();
+                    using (var reader = await command.ExecuteReaderAsync())
                     {
-                        while (reader.Read())
+                        while (await reader.ReadAsync())
                         {
                             orders.Add(MapOrder(reader));
                         }

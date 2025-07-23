@@ -1,6 +1,6 @@
 using LegacyECommerceApi.Models;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace LegacyECommerceApi.Repositories
 {
@@ -68,7 +68,7 @@ namespace LegacyECommerceApi.Repositories
             return customers;
         }
 
-        public Customer Add(Customer customer)
+        public async Task<Customer> AddAsync(Customer customer)
         {
             const string query = @"
                 INSERT INTO Customers (FirstName, LastName, Email, Phone, Address, CreatedDate)
@@ -86,8 +86,8 @@ namespace LegacyECommerceApi.Repositories
                     command.Parameters.AddWithValue("@Address", (object?)customer.Address ?? DBNull.Value);
                     command.Parameters.AddWithValue("@CreatedDate", DateTime.UtcNow);
 
-                    connection.Open();
-                    customer.CustomerId = (int)command.ExecuteScalar();
+                    await connection.OpenAsync();
+                    customer.CustomerId = (int)(await command.ExecuteScalarAsync())!;
                     customer.CreatedDate = DateTime.UtcNow;
                 }
             }
@@ -96,7 +96,7 @@ namespace LegacyECommerceApi.Repositories
             return customer;
         }
 
-        public void Update(Customer customer)
+        public async Task UpdateAsync(Customer customer)
         {
             const string query = @"
                 UPDATE Customers 
@@ -115,15 +115,15 @@ namespace LegacyECommerceApi.Repositories
                     command.Parameters.AddWithValue("@Phone", (object?)customer.Phone ?? DBNull.Value);
                     command.Parameters.AddWithValue("@Address", (object?)customer.Address ?? DBNull.Value);
 
-                    connection.Open();
-                    command.ExecuteNonQuery();
+                    await connection.OpenAsync();
+                    await command.ExecuteNonQueryAsync();
                 }
             }
 
             _logger.LogInformation("Customer updated: {CustomerId}", customer.CustomerId);
         }
 
-        public void Delete(int id)
+        public async Task DeleteAsync(int id)
         {
             const string query = "DELETE FROM Customers WHERE CustomerId = @CustomerId";
 
@@ -133,8 +133,8 @@ namespace LegacyECommerceApi.Repositories
                 {
                     command.Parameters.AddWithValue("@CustomerId", id);
                     
-                    connection.Open();
-                    command.ExecuteNonQuery();
+                    await connection.OpenAsync();
+                    await command.ExecuteNonQueryAsync();
                 }
             }
 

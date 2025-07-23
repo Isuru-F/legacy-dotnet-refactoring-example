@@ -6,10 +6,10 @@ namespace LegacyECommerceApi.Repositories
     {
         Task<Order?> GetByIdAsync(int id);
         Task<IEnumerable<Order>> GetAllAsync();
-        Order Add(Order order);
-        void Update(Order order);
-        void Delete(int id);
+        Task<Order> AddAsync(Order order);
+        Task UpdateAsync(Order order);
+        Task DeleteAsync(int id);
         Task<IEnumerable<Order>> GetByCustomerIdAsync(int customerId);
-        IEnumerable<Order> GetByStatus(string status);
+        Task<IEnumerable<Order>> GetByStatusAsync(string status);
     }
 }
